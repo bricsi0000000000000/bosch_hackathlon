@@ -6,8 +6,8 @@
 Adafruit_BNO055 bno = Adafruit_BNO055(55);
 
 unsigned int button_pin = 12;
-unsigned int RGB_red_led_pin = 11;
-unsigned int RGB_green_led_pin = 9;
+unsigned int RGB_red_led_pin = 9;
+unsigned int RGB_green_led_pin = 11;
 unsigned int RGB_blue_led_pin = 10;
 unsigned int forward_led_pin = 4;
 unsigned int right_led_pin = 2;
@@ -26,7 +26,7 @@ int start_y_value = 0;
 
 bool calibrating = false;
 
-enum Color {Red, Green, Blue};
+enum Color {Red, Green, Blue, Nothing};
 
 void setup(void)
 {
@@ -75,35 +75,65 @@ void loop(void)
   if (led_state == 0) {
     if (calibrating) {
       start_z_value = euler.z();
-
       start_y_value = euler.y();
     }
-
     calibrating = false;
-
-  }
-  if (led_state == 1) {
-    RGBColor(Color::Blue);
-    calibrating = true;
-  }
-  if (!calibrating) {
-    if ((euler.z() >= start_z_value + 80 && euler.z()  <= start_z_value + 100) &&
-        (euler.y() >= start_y_value - 10 && euler.y()  <= start_y_value + 10)) {
-      RGBColor(Color::Green);
-    }
-    else {
-      RGBColor(Color::Red);
-    }
   }
   
-  Serial.print(start_z_value);
-  Serial.print(" ");
-  Serial.print(euler.z());
-  Serial.print("\t");
-  Serial.print(start_y_value);
-  Serial.print(" ");
-  Serial.print(euler.y());
-  Serial.println();
+  if (led_state == 1) {
+    RGBColor(Color::Blue);
+
+    digitalWrite(back_led_pin, LOW);
+    digitalWrite(forward_led_pin, LOW);
+    digitalWrite(left_led_pin, LOW);
+    digitalWrite(right_led_pin, LOW);
+    
+    calibrating = true;
+  }
+  
+  if (!calibrating) {
+    if ((euler.z() >= start_z_value + 80 && euler.z()  <= start_z_value + 100) &&
+        (euler.y() >= start_y_value - 10 && euler.y()  <= start_y_value + 10)) 
+    {
+      RGBColor(Color::Green);
+
+      digitalWrite(back_led_pin, LOW);
+      digitalWrite(forward_led_pin, LOW);
+      digitalWrite(left_led_pin, LOW);
+      digitalWrite(right_led_pin, LOW);
+    }
+    else {
+      RGBColor(Color::Nothing);
+      
+      if(euler.z() < start_z_value + 80){
+        digitalWrite(back_led_pin, HIGH);
+      }
+      else{
+        digitalWrite(back_led_pin, LOW);
+      }
+
+      if(euler.z() > start_z_value + 100){
+        digitalWrite(forward_led_pin, HIGH);
+      }
+      else{
+        digitalWrite(forward_led_pin, LOW);
+      }
+
+      if(euler.y() > start_y_value - 10){
+        digitalWrite(left_led_pin, HIGH);
+      }
+      else{
+        digitalWrite(left_led_pin, LOW);
+      }
+
+      if(euler.y() < start_y_value + 10){
+        digitalWrite(right_led_pin, HIGH);
+      }
+      else{
+        digitalWrite(right_led_pin, LOW);
+      }
+    }
+  }
 }
 
 void RGBColor(Color color)
@@ -111,12 +141,23 @@ void RGBColor(Color color)
   switch(color){
     case Color::Red:
       analogWrite(RGB_red_led_pin, 255);
+      analogWrite(RGB_green_led_pin, 0);
+      analogWrite(RGB_blue_led_pin, 0);
     break;
     case Color::Green:
+      analogWrite(RGB_red_led_pin, 0);
       analogWrite(RGB_green_led_pin, 255);
+      analogWrite(RGB_blue_led_pin, 0);
     break;
     case Color::Blue:
+      analogWrite(RGB_red_led_pin, 0);
+      analogWrite(RGB_green_led_pin, 0);
       analogWrite(RGB_blue_led_pin, 255);
+    break;
+    default:
+      analogWrite(RGB_red_led_pin, 0);
+      analogWrite(RGB_green_led_pin, 0);
+      analogWrite(RGB_blue_led_pin, 0);
     break;
   }
 
