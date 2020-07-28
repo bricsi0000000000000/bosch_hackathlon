@@ -119,19 +119,24 @@ void loop(void)
         digitalWrite(forward_led_pin, LOW);
       }
 
-      if(euler.y() > start_y_value - 10){
+      if(euler.y() < start_y_value - 10){
         digitalWrite(left_led_pin, HIGH);
       }
       else{
         digitalWrite(left_led_pin, LOW);
       }
 
-      if(euler.y() < start_y_value + 10){
+      if(euler.y() > start_y_value + 10){
         digitalWrite(right_led_pin, HIGH);
       }
       else{
         digitalWrite(right_led_pin, LOW);
       }
+
+      Serial.print(euler.y());
+      Serial.print(" ");
+      Serial.print(start_y_value);
+      Serial.println();
     }
   }
 }
