@@ -22,7 +22,7 @@ unsigned int last_button_state = LOW;
 unsigned long last_debounce_time = 0; 
 unsigned long debounce_delay = 50;
 
-int start_z_value = 0;
+int start_x_value = 0;
 int start_y_value = 0;
 
 bool calibrating = false;
@@ -77,7 +77,7 @@ void loop()
   last_button_state = reading;
   if (led_state == 0) {
     if (calibrating) {
-      start_z_value = euler.x();
+      start_x_value = euler.x();
       start_y_value = euler.y();
     }
     calibrating = false;
@@ -94,7 +94,7 @@ void loop()
   }
   
   if (!calibrating) {    
-    if ((euler.x() >= start_z_value - 3 && euler.x()  <= start_z_value + 3) &&
+    if ((euler.x() >= start_x_value - 3 && euler.x()  <= start_x_value + 3) &&
         (euler.y() >= start_y_value - 3 && euler.y()  <= start_y_value + 3)) 
     {
       RGBColor(Color::Green);
@@ -106,13 +106,13 @@ void loop()
     else {
       RGBColor(Color::Nothing);
       
-      if(euler.x() > start_z_value + 3){
+      if(euler.x() > start_x_value + 3){
         digitalWrite(right_led_pin, HIGH);
       }
       else{
         digitalWrite(right_led_pin, LOW);
       }
-      if(euler.x() < start_z_value - 3){
+      if(euler.x() < start_x_value - 3){
         digitalWrite(left_led_pin, HIGH);
       }
       else{
