@@ -7,17 +7,18 @@ Adafruit_BNO055 bno = Adafruit_BNO055(55);
 
 unsigned int button_pin = 12;
 unsigned int RGB_red_led_pin = 9;
-unsigned int RGB_green_led_pin = 11;
-unsigned int RGB_blue_led_pin = 10;
+unsigned int RGB_green_led_pin = 10;
+unsigned int RGB_blue_led_pin = 11;
+unsigned int right_led_pin = 7;
 unsigned int forward_led_pin = 4;
-unsigned int right_led_pin = 2;
-unsigned int back_led_pin = 7;
-unsigned int left_led_pin = 8;
+unsigned int back_led_pin = 8;
+unsigned int left_led_pin = 2;
+
+int reading;
 
 unsigned int led_state = HIGH;        
 unsigned int button_state;            
 unsigned int last_button_state = LOW;
-
 unsigned long last_debounce_time = 0; 
 unsigned long debounce_delay = 50;
 
@@ -28,8 +29,8 @@ bool calibrating = false;
 
 enum Color {Red, Green, Blue, Nothing};
 
-void setup(void)
-{
+void setup()
+{  
   pinMode(button_pin, INPUT);
   pinMode(RGB_red_led_pin, OUTPUT);
   pinMode(RGB_green_led_pin, OUTPUT);
@@ -38,43 +39,45 @@ void setup(void)
   pinMode(right_led_pin, OUTPUT);
   pinMode(back_led_pin, OUTPUT);
   pinMode(left_led_pin, OUTPUT);
-
+  
   Serial.begin(9600);  
   Serial.println("Orientation Sensor Test"); 
-  Serial.println("");  
-  
+  Serial.println("");
   if (!bno.begin())  {
     Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
     while (1);
-  } 
+  }
+  
   delay(1000);  
   bno.setExtCrystalUse(true);
 }
-
-void loop(void)
+void loop()
 {
   imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
-
+  if (euler.x() < 0)
+    {
+      euler.x() = -(180 - fabsf(euler.x()));
+    }
+    else
+    {
+      euler.x() = 180 - fabsf(euler.x());
+    }
   int reading = digitalRead(button_pin);
   if (reading != last_button_state) {
     last_debounce_time = millis();
   }
-
   if ((millis() - last_debounce_time) > debounce_delay) {
     if (reading != button_state) {
       button_state = reading;
-
       if (button_state == HIGH) {
         led_state = !led_state;
       }
     }
   }
-
   last_button_state = reading;
-
   if (led_state == 0) {
     if (calibrating) {
-      start_z_value = euler.z();
+      start_z_value = euler.x();
       start_y_value = euler.y();
     }
     calibrating = false;
@@ -82,7 +85,6 @@ void loop(void)
   
   if (led_state == 1) {
     RGBColor(Color::Blue);
-
     digitalWrite(back_led_pin, LOW);
     digitalWrite(forward_led_pin, LOW);
     digitalWrite(left_led_pin, LOW);
@@ -91,12 +93,11 @@ void loop(void)
     calibrating = true;
   }
   
-  if (!calibrating) {
-    if ((euler.z() >= start_z_value + 80 && euler.z()  <= start_z_value + 100) &&
-        (euler.y() >= start_y_value - 10 && euler.y()  <= start_y_value + 10)) 
+  if (!calibrating) {    
+    if ((euler.x() >= start_z_value - 3 && euler.x()  <= start_z_value + 3) &&
+        (euler.y() >= start_y_value - 3 && euler.y()  <= start_y_value + 3)) 
     {
       RGBColor(Color::Green);
-
       digitalWrite(back_led_pin, LOW);
       digitalWrite(forward_led_pin, LOW);
       digitalWrite(left_led_pin, LOW);
@@ -105,42 +106,33 @@ void loop(void)
     else {
       RGBColor(Color::Nothing);
       
-      if(euler.z() < start_z_value + 80){
-        digitalWrite(back_led_pin, HIGH);
-      }
-      else{
-        digitalWrite(back_led_pin, LOW);
-      }
-
-      if(euler.z() > start_z_value + 100){
-        digitalWrite(forward_led_pin, HIGH);
-      }
-      else{
-        digitalWrite(forward_led_pin, LOW);
-      }
-
-      if(euler.y() < start_y_value - 10){
-        digitalWrite(left_led_pin, HIGH);
-      }
-      else{
-        digitalWrite(left_led_pin, LOW);
-      }
-
-      if(euler.y() > start_y_value + 10){
+      if(euler.x() > start_z_value + 3){
         digitalWrite(right_led_pin, HIGH);
       }
       else{
         digitalWrite(right_led_pin, LOW);
       }
-
-      Serial.print(euler.y());
-      Serial.print(" ");
-      Serial.print(start_y_value);
-      Serial.println();
+      if(euler.x() < start_z_value - 3){
+        digitalWrite(left_led_pin, HIGH);
+      }
+      else{
+        digitalWrite(left_led_pin, LOW);
+      }
+      if(euler.y() > start_y_value + 3){
+        digitalWrite(back_led_pin, HIGH);
+      }
+      else{
+        digitalWrite(back_led_pin, LOW);
+      }
+      if(euler.y() < start_y_value - 3){
+        digitalWrite(forward_led_pin, HIGH);
+      }
+      else{
+        digitalWrite(forward_led_pin, LOW);
+      }
     }
   }
 }
-
 void RGBColor(Color color)
 {
   switch(color){
@@ -165,14 +157,4 @@ void RGBColor(Color color)
       analogWrite(RGB_blue_led_pin, 0);
     break;
   }
-
-  /*RGB_color(255, 0, 0); // Red
-    RGB_color(0, 255, 0); // Green
-    RGB_color(0, 0, 255); // Blue
-    RGB_color(255, 255, 125); // Raspberry
-    RGB_color(0, 255, 255); // Cyan
-    RGB_color(255, 0, 255); // Magenta
-    RGB_color(255, 255, 0); // Yellow
-    RGB_color(255, 255, 255); // White
-    */
 }
