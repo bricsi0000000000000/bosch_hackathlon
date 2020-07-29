@@ -56,7 +56,7 @@ After we pushed the button, the program saves the current rotation of the drill.
 We adjusted a 3 degree threshold on both axes.
 
 ```c
-if ((euler.x() >= start_z_value - 3 && euler.x()  <= start_z_value + 3) &&
+if ((euler.x() >= start_x_value - 3 && euler.x()  <= start_x_value + 3) &&
     (euler.y() >= start_y_value - 3 && euler.y()  <= start_y_value + 3)) 
 {}
 ```
@@ -149,6 +149,12 @@ If not, you can choose menus and options manually.
 
 After we choose the right options, the program will tell the right drilling options for the user.
 
+You can choose three materials.
+
+```c
+enum Materials {Wood, Aluminium, Steel};
+```
+
 ```c
 switch(selected_material){
     case Materials::Steel:
@@ -218,7 +224,7 @@ switch(selected_material){
       }
     break;
   }
-  ```
+```
 
 For the printing of the LCD display, we defined a function called `printLCD`.
 
