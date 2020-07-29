@@ -94,8 +94,8 @@ void loop()
   }
   
   if (!calibrating) {    
-    if ((euler.x() >= start_x_value - 3 && euler.x()  <= start_x_value + 3) &&
-        (euler.y() >= start_y_value - 3 && euler.y()  <= start_y_value + 3)) 
+    if ((euler.x() >= start_x_value - 5 && euler.x()  <= start_x_value + 5) &&
+        (euler.y() >= start_y_value - 5 && euler.y()  <= start_y_value + 5)) 
     {
       RGBColor(Color::Green);
       digitalWrite(back_led_pin, LOW);
@@ -106,25 +106,25 @@ void loop()
     else {
       RGBColor(Color::Nothing);
       
-      if(euler.x() > start_x_value + 3){
-        digitalWrite(right_led_pin, HIGH);
-      }
-      else{
-        digitalWrite(right_led_pin, LOW);
-      }
-      if(euler.x() < start_x_value - 3){
+      if(euler.x() > start_x_value + 5){
         digitalWrite(left_led_pin, HIGH);
       }
       else{
         digitalWrite(left_led_pin, LOW);
       }
-      if(euler.y() > start_y_value + 3){
+      if(euler.x() < start_x_value - 5){
+        digitalWrite(right_led_pin, HIGH);
+      }
+      else{
+        digitalWrite(right_led_pin, LOW);
+      }
+      if(euler.y() > start_y_value + 5){
         digitalWrite(back_led_pin, HIGH);
       }
       else{
         digitalWrite(back_led_pin, LOW);
       }
-      if(euler.y() < start_y_value - 3){
+      if(euler.y() < start_y_value - 5){
         digitalWrite(forward_led_pin, HIGH);
       }
       else{
